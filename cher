@@ -1,0 +1,206 @@
+MainWindow
+<Grid>
+        <Frame x:Name="frame" Content="Frame"/>
+
+    </Grid>
+CS
+public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+            OpenPage(pages.login);
+        }
+        public enum pages
+        {
+            login,
+            regin
+        }
+       public void OpenPage(pages pages)
+        {
+            if (pages == pages.login)
+            {
+                frame.Navigate(new login(this));
+            }
+            else if (pages == pages.regin)
+                frame.Navigate(new regin(this));
+        }
+        public DataTable Select(string selectSQL) // функция подключения к базе данных и обработка запросов
+        {
+            DataTable dataTable = new DataTable("dataBase");                // создаём таблицу в приложении
+                                                                            // подключаемся к базе данных
+            SqlConnection sqlConnection = new SqlConnection("server=PC/SQLEXPRESS;Trusted_Connection=Yes;DataBase=RegAndAvt;");
+            sqlConnection.Open();                                           // открываем базу данных
+            SqlCommand sqlCommand = sqlConnection.CreateCommand();          // создаём команду
+            sqlCommand.CommandText = selectSQL;                             // присваиваем команде текст
+            SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand); // создаём обработчик
+            sqlDataAdapter.Fill(dataTable);                                 // возращаем таблицу с результатом
+            return dataTable;
+        }
+
+       
+    }
+}
+вход
+Страница
+<Grid Background="White">
+        <Label Content="Введите логин" HorizontalAlignment="Left" Margin="287,157,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="textBox_login" HorizontalAlignment="Center" Margin="0,188,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="226"/>
+        <Label Content="Введите пароль" HorizontalAlignment="Left" Margin="287,0,0,0" VerticalAlignment="Center"/>
+        <Button x:Name="enter" Content="Войти" HorizontalAlignment="Left" Margin="287,277,0,0" VerticalAlignment="Top" Width="75" Click="enter_Click"/>
+        <Button x:Name="regin" Content="Зарегистрировать" HorizontalAlignment="Left" Margin="385,277,0,0" VerticalAlignment="Top" Width="128" Click="regin_Click"/>
+        <PasswordBox x:Name="password" HorizontalAlignment="Center" Margin="0,242,0,0" VerticalAlignment="Top" Width="226"/>
+
+    </Grid>
+</Page>
+CS
+public partial class login : Page
+    {
+        public MainWindow mainWindow;
+        public login(MainWindow _mainWindow)
+        {
+            InitializeComponent();
+            mainWindow = _mainWindow;
+        }
+
+       
+
+        private void regin_Click(object sender, RoutedEventArgs e)
+        {
+            mainWindow.OpenPage(MainWindow.pages.regin);
+        }
+
+        private void enter_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (textBox_login.Text.Length > 0) // проверяем введён ли логин     
+            {
+                if (password.Password.Length > 0) // проверяем введён ли пароль         
+                {             // ищем в базе данных пользователя с такими данными         
+                    DataTable dt_user = mainWindow.Select("SELECT * FROM [dbo].[User] WHERE [Login] = '" + textBox_login.Text + "' AND [Password] = '" + password.Password + "'");
+                    if (dt_user.Rows.Count > 0) // если такая запись существует       
+                    {
+                        if (textBox_login.Text == "admin")
+                        {
+                            WindiwAdmin windiwAdmin = new WindiwAdmin();
+                            windiwAdmin.Show();// открываем окно админа
+                        }
+                        else
+                        {
+                            // окно пользователя
+                        }
+
+                        MessageBox.Show("Пользователь авторизовался"); // говорим, что авторизовался         
+                    }
+                    else MessageBox.Show("Пользователя не найден"); // выводим ошибку  
+                }
+                else MessageBox.Show("Введите пароль"); // выводим ошибку    
+            }
+            else MessageBox.Show("Введите логин"); // выводим ошибку 
+        }
+    }
+}
+Регистр
+ <Grid Background="White">
+        <Label Content="Введите логин" HorizontalAlignment="Left" Margin="295,119,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="textBox_login" HorizontalAlignment="Left" Margin="295,150,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="207"/>
+        <Label Content="Введите пароль" HorizontalAlignment="Left" Margin="295,173,0,0" VerticalAlignment="Top"/>
+        <PasswordBox x:Name="password" HorizontalAlignment="Left" Margin="295,204,0,0" VerticalAlignment="Top" Width="207"/>
+        <Label Content="Повторите пароль" HorizontalAlignment="Left" Margin="295,227,0,0" VerticalAlignment="Top"/>
+        <PasswordBox x:Name="password_Copy" HorizontalAlignment="Left" Margin="295,258,0,0" VerticalAlignment="Top" Width="207"/>
+        <Button x:Name="reg" Content="Регистрация" HorizontalAlignment="Left" Margin="295,300,0,0" VerticalAlignment="Top" Width="103" Click="reg_Click"/>
+        <Button x:Name="back" Content="Отмена" HorizontalAlignment="Left" Margin="432,300,0,0" VerticalAlignment="Top" Width="70" Click="back_Click"/>
+
+    </Grid>
+</Page>
+CS
+ public partial class regin : Page
+    { public MainWindow mainWindow;
+        public regin(MainWindow _mainWindow)
+        {
+            InitializeComponent();
+            mainWindow = _mainWindow;
+        }
+
+        private void back_Click(object sender, RoutedEventArgs e)
+        {
+            mainWindow.OpenPage(MainWindow.pages.login);
+        }
+
+        private void reg_Click(object sender, RoutedEventArgs e)
+        {
+            if (textBox_login.Text.Length > 0) // проверяем логин
+{
+                if (password.Password.Length > 0) // проверяем пароль
+	{
+                    if (password_Copy.Password.Length > 0) // проверяем второй пароль
+		{
+
+
+                    }else MessageBox.Show("Повторите пароль");
+                }else MessageBox.Show("Укажите пароль");
+            }else MessageBox.Show("Укажите логин");
+
+
+            if (password.Password.Length >= 6)
+{
+                bool en = true; // английская раскладка
+                bool number = false; // цифра
+
+                for (int i = 0; i < password.Password.Length; i++) // перебираем символы
+                {
+                    if (password.Password[i] >= 'А' && password.Password[i] <= 'Я') en = false; // если русская раскладка
+                if (password.Password[i] >= '0' && password.Password[i] <= '9') number = true; // если цифры
+               
+            }
+
+            if (!en)
+                MessageBox.Show("Доступна только английская раскладка"); // выводим сообщение
+            else if (!number)
+                MessageBox.Show("Добавьте хотя бы одну цифру"); // выводим сообщение
+            if (en && number) // проверяем соответствие
+            {
+            }
+        } else MessageBox.Show("пароль слишком короткий, минимум 6 символов");
+        }
+    }
+}
+ОКНО USER
+ Title="User" x:Name="user" Loaded="user_Loaded" Height="450" Width="800">
+    <Grid>
+
+        <DataGrid x:Name="mydateGrid">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Логин" Binding="{Binding login}"/>
+                <DataGridTextColumn Header="Пароль" Binding="{Binding password}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+    </Grid>
+</Window>
+CS
+public partial class User : Window
+    {
+        public User()
+        {
+            InitializeComponent();
+        }
+        SqlConnection sqlConnection = new SqlConnection("server = PC\\SQLEXPRESS01; Trusted_Connection = Yes; DataBase=Log;");
+        SqlDataAdapter da;
+        DataTable db;
+        private void show()
+        {
+            da = new SqlDataAdapter("SELECT * From [dbo].[users]", sqlConnection);
+            db = new DataTable();
+            da.Fill(db);
+            mydateGrid.ItemsSource = db.DefaultView;
+
+
+        }
+
+        private void user_Loaded(object sender, RoutedEventArgs e)
+        {
+            Show();
+        }
+    }
+}
